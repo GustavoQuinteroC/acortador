@@ -1,0 +1,90 @@
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit:
+    name: PHPUnit (PHP ${{ matrix.php }}, SQLite)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, pdo_sqlite, gd, intl, bcmath
+          coverage: none
+      - run: composer update --no-interaction --no-progress --prefer-dist
+      - run: php artisan test
+      - name: Análisis estático (Larastan nivel 6)
+        if: matrix.php == '8.5'
+        run: composer analizar
+
+  servicios-reales:
+    name: PHPUnit con MariaDB y Redis
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:12
+        env:
+          MARIADB_DATABASE: acortador
+          MARIADB_USER: app_acortador
+          MARIADB_PASSWORD: solo-para-ci
+          MARIADB_RANDOM_ROOT_PASSWORD: '1'
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-retries=20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-retries=10
+    env:
+      DB_CONNECTION: mariadb
+      DB_HOST: 127.0.0.1
+      DB_DATABASE: acortador
+      DB_USERNAME: app_acortador
+      DB_PASSWORD: solo-para-ci
+      CACHE_STORE: redis
+      REDIS_HOST: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, pdo_mysql, redis, gd, intl, bcmath
+          coverage: none
+      - run: composer update --no-interaction --no-progress --prefer-dist
+      - run: php artisan test
+
+  navegador:
+    name: Playwright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, pdo_sqlite, gd
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: composer update --no-interaction --no-progress --prefer-dist
+      - name: Base SQLite con la cuenta demo
+        run: |
+          cp .env.example .env
+          sed -i 's/^APP_ENV=.*/APP_ENV=local/; s/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/; s/^DB_DATABASE=.*/DB_DATABASE=/; s/^SESSION_DRIVER=.*/SESSION_DRIVER=file/; s/^CACHE_STORE=.*/CACHE_STORE=file/; s/^SESSION_SECURE_COOKIE=.*/SESSION_SECURE_COOKIE=false/; s#^APP_URL=.*#APP_URL=http://127.0.0.1:8000#' .env
+          php artisan key:generate
+          touch database/database.sqlite
+          php artisan migrate --seed --force
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e

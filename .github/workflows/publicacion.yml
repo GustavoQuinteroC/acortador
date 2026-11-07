@@ -1,0 +1,34 @@
+name: Publicación
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  paquete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, gd, intl, bcmath
+          coverage: none
+      - name: Dependencias de producción
+        run: |
+          composer update --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
+      - name: Armar el zip listo para servir
+        run: |
+          mkdir -p salida
+          zip -qr "salida/acortador-${GITHUB_REF_NAME}.zip" . \
+            -x '.git/*' '.github/*' 'tests/*' 'e2e/*' 'node_modules/*' 'salida/*' \
+               'package.json' 'package-lock.json' 'playwright.config.js' 'phpstan.neon' 'phpunit.xml' \
+               '.env' 'database/database.sqlite' 'storage/logs/*.log'
+          cp composer.lock salida/composer.lock
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" salida/* --title "$GITHUB_REF_NAME" --notes "Paquete listo para servir con vendor/ incluido. Descomprimir sobre la carpeta de la app conservando .env y storage/."
