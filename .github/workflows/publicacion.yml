@@ -19,7 +19,7 @@ jobs:
           coverage: none
       - name: Dependencias de producción
         run: |
-          composer update --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
+          composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
       - name: Armar el zip listo para servir
         run: |
           mkdir -p salida
