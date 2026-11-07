@@ -35,7 +35,7 @@ class DemoSeeder extends Seeder
         $paises = ['MX' => 70, 'US' => 12, 'CO' => 6, 'ES' => 5, 'AR' => 4, 'CL' => 3];
         $dispositivos = ['celular' => 62, 'escritorio' => 31, 'tableta' => 4, 'bot' => 3];
         $navegadores = ['Chrome' => 58, 'Safari' => 27, 'Edge' => 7, 'Firefox' => 5, 'Samsung Internet' => 3];
-        $referentes = [null => 40, 'linkedin.com' => 25, 'l.facebook.com' => 12, 't.co' => 8, 'github.com' => 10, 'web.whatsapp.com' => 5];
+        $referentes = ['' => 40, 'linkedin.com' => 25, 'l.facebook.com' => 12, 't.co' => 8, 'github.com' => 10, 'web.whatsapp.com' => 5];
 
         mt_srand(2026);
         foreach ($ejemplos as [$slug, $destino, $titulo, $porDia]) {

@@ -17,7 +17,7 @@ test('la portada y la cuenta demo funcionan sin errores', async ({ page }) => {
   await expect(page.getByText('Demo de solo lectura')).toBeVisible();
   await expect(page.locator('canvas[data-grafica]')).toBeVisible();
 
-  await page.getByRole('link', { name: 'Enlaces', exact: true }).click();
+  await page.goto('/panel/enlaces');
   await page.getByRole('button', { name: 'QR de /demo-cv' }).click();
   await expect(page.locator('#modal-qr-imagen')).toHaveJSProperty('complete', true);
   await expect(page.locator('#modal-qr-titulo')).toHaveText('QR de /demo-cv');
