@@ -3,7 +3,7 @@
 # Toma nombre, usuario y contraseña del .env de la app y pide la contraseña root sin mostrarla.
 #
 # Uso: herramientas/crear-base.sh <ruta/al/.env> <contenedor-mariadb> [hosts permitidos]
-# Hosts por omisión: '%'. Para limitarlo a la red de Docker: "10.0.1.% fd36:3183:aeb0:%"
+# Hosts por omisión: '%'. Para limitarlo a la red de Docker, pasa sus rangos, por ejemplo: "172.18.0.% fd00:1234:%"
 set -euo pipefail
 
 ENV_APP="${1:?Falta la ruta al .env}"
