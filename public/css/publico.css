@@ -56,3 +56,6 @@ pre { margin-top: 12px; background: var(--noche); color: var(--hielo); border-ra
 @media (max-width: 560px) { .barra__enlaces { gap: 14px; font-size: .9rem; } .tarjeta, .ticket { padding: 18px; } .ticket__datos { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 420px) { .solo-ancho { display: none; } }
 main.estrecho { grid-template-columns: minmax(0, 480px); }
+.portada > * { min-width: 0; }
+.ticket__corto { flex-wrap: wrap; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .ticket__corto { font-size: 1rem; } }
